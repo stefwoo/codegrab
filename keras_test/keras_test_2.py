@@ -85,7 +85,7 @@ model.fit_generator(
     validation_data=validation_generator,
     validation_steps=nb_validation_samples // batch_size)
 
-# model.save_weights('first_try.h5')
+model.save_weights('first_try.h5')
 
 # history = model.fit(x_train, y_train,
 #                     batch_size=batch_size,
