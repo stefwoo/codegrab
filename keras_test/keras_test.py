@@ -14,7 +14,7 @@ validation_data_dir = 'data/validation'
 nb_train_samples = 543
 nb_validation_samples = 260
 epochs = 50
-batch_size = 16
+batch_size = 8 
 
 if K.image_data_format() == 'channels_first':
     input_shape = (3, img_width, img_height)
@@ -22,15 +22,15 @@ else:
     input_shape = (img_width, img_height, 3)
 
 model = Sequential()
-model.add(Conv2D(32, (3, 3), input_shape=input_shape))
+model.add(Conv2D(32, (2,2),  input_shape=input_shape))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(32, (3, 3)))
+model.add(Conv2D(32, (2,2)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
-model.add(Conv2D(64, (3, 3)))
+model.add(Conv2D(64,(2,2)))
 model.add(Activation('relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
 
@@ -51,14 +51,15 @@ model.compile(loss='binary_crossentropy',
 
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
-    rescale=1. / 255,
-    shear_range=0.2,
-    zoom_range=0.2,
-    horizontal_flip=True)
+#    rescale=1. / 255,
+#    shear_range=0.2,
+#    zoom_range=0.2,
+#    horizontal_flip=True
+)
 
 # this is the augmentation configuration we will use for testing:
 # only rescaling
-test_datagen = ImageDataGenerator(rescale=1. / 255)
+test_datagen = ImageDataGenerator()#rescale=1. / 255)
 
 train_generator = train_datagen.flow_from_directory(
     train_data_dir,
@@ -79,4 +80,4 @@ model.fit_generator(
     validation_data=validation_generator,
     validation_steps=nb_validation_samples // batch_size)
 
-model.save_weights('first_try.h5')
+#model.save_weights('first_try.h5')

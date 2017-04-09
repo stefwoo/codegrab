@@ -27,6 +27,7 @@ if K.image_data_format() == 'channels_first':
 else:
     input_shape = (img_width, img_height, 3)
 
+print(input_shape)
 # x_train = x_train.reshape(60000, 784)
 # x_test = x_test.reshape(10000, 784)
 # x_train = x_train.astype('float32')
@@ -41,15 +42,12 @@ else:
 # y_test = keras.utils.to_categorical(y_test, num_classes)
 
 model = Sequential()
-# model.add(Dense(512, activation='relu', input_shape=(784,)))
-model.add(Dense(512, activation='relu', input_shape=input_shape)
+model.add(Dense(512, activation='relu', input_shape=input_shape))
 model.add(Dropout(0.2))
 model.add(Dense(512, activation='relu'))
 model.add(Dropout(0.2))
 model.add(Dense(10, activation='softmax'))
-
 model.summary()
-
 model.compile(loss='categorical_crossentropy',
               optimizer=RMSprop(),
               metrics=['accuracy'])
@@ -57,14 +55,15 @@ model.compile(loss='categorical_crossentropy',
 
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
-    rescale=1. / 255,
-    shear_range=0.2,
-    zoom_range=0.2,
-    horizontal_flip=True)
+#    rescale=1. / 255,
+#    shear_range=0.2,
+#    zoom_range=0.2,
+#    horizontal_flip=True
+    )
 
 # this is the augmentation configuration we will use for testing:
 # only rescaling
-test_datagen = ImageDataGenerator(rescale=1. / 255)
+test_datagen = ImageDataGenerator()#rescale=1. / 255)
 
 train_generator = train_datagen.flow_from_directory(
     train_data_dir,
@@ -85,7 +84,7 @@ model.fit_generator(
     validation_data=validation_generator,
     validation_steps=nb_validation_samples // batch_size)
 
-# model.save_weights('first_try.h5')
+model.save_weights('first_try.h5')
 
 # history = model.fit(x_train, y_train,
 #                     batch_size=batch_size,
