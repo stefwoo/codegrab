@@ -4,7 +4,9 @@ from __future__ import print_function
 import keras
 # from keras.datasets import mnist
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.layers import Dense, Dropout,Conv2D,Flatten,Activation,MaxPooling2D
+# from keras.layers import Activation, Dropout, Flatten, Dense
+
 from keras.optimizers import RMSprop
 from keras.preprocessing.image import ImageDataGenerator
 from keras import backend as K
@@ -17,36 +19,53 @@ train_data_dir = 'data/train'
 validation_data_dir = 'data/validation'
 nb_train_samples = 543
 nb_validation_samples = 260
-epochs = 50
-batch_size = 8
+epochs = 20
+batch_size = 1
 
 # num_classes = 10
-
 if K.image_data_format() == 'channels_first':
     input_shape = (3, img_width, img_height)
 else:
     input_shape = (img_width, img_height, 3)
 
-print(input_shape)
-# x_train = x_train.reshape(60000, 784)
-# x_test = x_test.reshape(10000, 784)
-# x_train = x_train.astype('float32')
-# x_test = x_test.astype('float32')
-# x_train /= 255
-# x_test /= 255
-# print(x_train.shape[0], 'train samples')
-# print(x_test.shape[0], 'test samples')
-
-# convert class vectors to binary class matrices
-# y_train = keras.utils.to_categorical(y_train, num_classes)
-# y_test = keras.utils.to_categorical(y_test, num_classes)
-
 model = Sequential()
-model.add(Dense(512, activation='relu', input_shape=input_shape))
-model.add(Dropout(0.2))
-model.add(Dense(512, activation='relu'))
-model.add(Dropout(0.2))
-model.add(Dense(10, activation='softmax'))
+
+
+# input=15*20*3, output=15*20*32
+model.add(Conv2D(
+    nb_filter=32,
+    nb_row=2,
+    nb_col=2,
+    border_mode='same',     # Padding method
+    # dim_ordering='th',      # if use tensorflow, to set the input dimension order to theano ("th") style, but you can change it.
+    batch_size = batch_size,
+    input_shape=input_shape         # channels & height & width
+    ))
+model.add(Activation('relu'))
+
+# input=15*20*32, output=8*11*32=2816
+model.add(MaxPooling2D(
+    pool_size=(2, 2),
+    strides=(2, 2),
+    border_mode='same',    # Padding method
+))
+
+# input=8*11*32
+# model.add(Conv2D(64,(2,2),border_mode="same"))
+# model.add(Activation("relu"))
+# output=7*9*32
+# model.add(MaxPooling2D(pool_size=(2, 2), border_mode='same'))
+
+# Fully connected layer 1 input shape (64 * 7 * 7) = (3136), output shape (1024)
+model.add(Flatten())
+model.add(Dense(1024))
+model.add(Activation('relu'))
+
+# Fully connected layer 2 to shape (10) for 10 classes
+# model.add(Dropout(0.2))
+model.add(Dense(26))
+model.add(Activation('softmax'))
+
 model.summary()
 model.compile(loss='categorical_crossentropy',
               optimizer=RMSprop(),
@@ -55,7 +74,7 @@ model.compile(loss='categorical_crossentropy',
 
 # this is the augmentation configuration we will use for training
 train_datagen = ImageDataGenerator(
-#    rescale=1. / 255,
+   rescale=1. / 255,
 #    shear_range=0.2,
 #    zoom_range=0.2,
 #    horizontal_flip=True
@@ -63,28 +82,28 @@ train_datagen = ImageDataGenerator(
 
 # this is the augmentation configuration we will use for testing:
 # only rescaling
-test_datagen = ImageDataGenerator()#rescale=1. / 255)
+test_datagen = ImageDataGenerator(rescale=1. / 255)
 
 train_generator = train_datagen.flow_from_directory(
     train_data_dir,
     target_size=(img_width, img_height),
-    batch_size=batch_size,
-    class_mode='binary')
+    batch_size=batch_size)
+    # class_mode='binary')
 
 validation_generator = test_datagen.flow_from_directory(
     validation_data_dir,
     target_size=(img_width, img_height),
-    batch_size=batch_size,
-    class_mode='binary')
+    batch_size=batch_size)
+    # class_mode='binary')
 
 model.fit_generator(
     train_generator,
     steps_per_epoch=nb_train_samples // batch_size,
-    epochs=epochs,
-    validation_data=validation_generator,
-    validation_steps=nb_validation_samples // batch_size)
+    epochs=epochs)
+    # validation_data=validation_generator,
+    # validation_steps=nb_validation_samples // batch_size)
 
-model.save_weights('first_try.h5')
+# model.save_weights('first_try.h5')
 
 # history = model.fit(x_train, y_train,
 #                     batch_size=batch_size,
